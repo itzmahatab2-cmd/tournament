@@ -1,0 +1,5 @@
+{
+  "name": "TournaForm",
+  "description": "A professional, Google Forms-inspired tournament registration system with a comprehensive admin dashboard, Excel export, and AI-powered team name generation.",
+  "requestFramePermissions": []
+}
