@@ -219,7 +219,7 @@ export const FormPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <p className="mb-1"><span className="font-bold">👤 Main Organiser:</span> Mahatab</p>
-                    <p><span className="font-bold">📅 Start Date:</span> 20 February / Friday</p>
+                    <p><span className="font-bold">📅 Start Date:</span> Every Friday</p>
                 </div>
                 <div>
                     <p><span className="font-bold">📞 Contact (WhatsApp):</span> 01755913070</p>
