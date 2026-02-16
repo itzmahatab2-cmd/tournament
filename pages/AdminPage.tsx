@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getRegistrations, exportToCSV, clearRegistrations, deleteRegistration, copyForGoogleSheets } from '../services/storageService';
 import { RegistrationData } from '../types';
-import { Download, Trash2, ArrowLeft, Search, Users, Shield, Trash, Copy, Check, Database, Loader2 } from 'lucide-react';
+import { Download, Trash2, ArrowLeft, Search, Shield, Copy, Check, Database, Loader2, Lock, Terminal } from 'lucide-react';
 
 export const AdminPage: React.FC = () => {
   const [registrations, setRegistrations] = useState<RegistrationData[]>([]);
@@ -37,19 +37,19 @@ export const AdminPage: React.FC = () => {
       if (password === 'mahatab') {
           setIsAuthenticated(true);
       } else {
-          alert('Incorrect password.');
+          alert('Access Denied: Invalid Credentials');
       }
   };
 
   const handleClearAll = async () => {
-      if (window.confirm('Are you sure you want to delete ALL registrations? This cannot be undone.')) {
+      if (window.confirm('WARNING: Purge all database entries? This action is irreversible.')) {
           setIsLoading(true);
           try {
             await clearRegistrations();
-            await loadData(); // Reload from server
-            alert('Database cleared successfully.');
+            await loadData();
+            alert('Database purged.');
           } catch (e) {
-            alert('Failed to clear database.');
+            alert('Purge failed.');
           } finally {
             setIsLoading(false);
           }
@@ -57,13 +57,13 @@ export const AdminPage: React.FC = () => {
   };
 
   const handleDeleteOne = async (id: string, teamName: string) => {
-      if (window.confirm(`Are you sure you want to delete team "${teamName}"?`)) {
+      if (window.confirm(`Delete entry for "${teamName}"?`)) {
           setIsLoading(true);
           try {
             await deleteRegistration(id);
-            await loadData(); // Reload from server
+            await loadData();
           } catch (e) {
-            alert('Failed to delete registration.');
+            alert('Delete failed.');
           } finally {
             setIsLoading(false);
           }
@@ -74,14 +74,12 @@ export const AdminPage: React.FC = () => {
       const success = await copyForGoogleSheets(registrations);
       if (success) {
           setCopySuccess(true);
-          alert("✅ Data copied!\n\n1. Open Google Sheets (sheets.new)\n2. Click the first cell (A1)\n3. Press Ctrl+V (Paste)");
           setTimeout(() => setCopySuccess(false), 3000);
       } else {
-          alert("Failed to copy data or no data available.");
+          alert("Clipboard Error");
       }
   };
 
-  // Safe lower case helper to prevent crashes on bad data
   const safeLower = (str?: string) => (str || '').toLowerCase();
 
   const filteredData = registrations.filter(r => 
@@ -92,30 +90,32 @@ export const AdminPage: React.FC = () => {
 
   if (!isAuthenticated) {
       return (
-          <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-              <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+          <div className="min-h-screen flex items-center justify-center p-4">
+              <div className="bg-slate-900 border border-slate-700 p-8 rounded-lg shadow-[0_0_30px_rgba(0,0,0,0.5)] w-full max-w-md relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-cyber-primary"></div>
                   <div className="flex justify-center mb-6">
-                      <div className="p-3 bg-purple-100 rounded-full">
-                        <Shield className="w-8 h-8 text-purple-600" />
+                      <div className="p-4 bg-slate-800 rounded-full border border-slate-700 shadow-inner">
+                        <Lock className="w-8 h-8 text-cyber-primary" />
                       </div>
                   </div>
-                  <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Admin Access</h2>
+                  <h2 className="text-2xl font-display font-bold text-center text-white mb-2">RESTRICTED AREA</h2>
+                  <p className="text-center text-gray-500 font-tech text-sm mb-6">Enter authorization code to proceed</p>
+                  
                   <form onSubmit={handleLogin} className="space-y-4">
                       <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
                           <input 
                             type="password" 
                             value={password}
                             onChange={e => setPassword(e.target.value)}
-                            className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none"
-                            placeholder="Enter admin password"
+                            className="w-full bg-black/50 border border-slate-700 text-white px-4 py-3 rounded focus:border-cyber-primary focus:ring-1 focus:ring-cyber-primary focus:outline-none font-mono tracking-widest text-center"
+                            placeholder="•••••••"
                           />
                       </div>
-                      <button type="submit" className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 transition">
-                          Login
+                      <button type="submit" className="w-full bg-cyber-primary hover:bg-violet-600 text-white font-tech font-bold uppercase py-3 rounded transition shadow-[0_0_15px_rgba(139,92,246,0.3)] hover:shadow-[0_0_20px_rgba(139,92,246,0.5)]">
+                          Authenticate
                       </button>
-                      <Link to="/" className="block text-center text-sm text-gray-500 hover:text-purple-600 mt-4">
-                          Back to Form
+                      <Link to="/" className="block text-center text-xs font-tech text-slate-500 hover:text-white mt-6 uppercase tracking-wider">
+                          Return to Public Access
                       </Link>
                   </form>
               </div>
@@ -124,52 +124,53 @@ export const AdminPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-12">
+    <div className="min-h-screen pb-12">
         {/* Admin Header */}
-        <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
+        <div className="bg-slate-900/80 backdrop-blur-lg border-b border-slate-700/50 sticky top-0 z-20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
                 <div className="flex items-center gap-4">
-                    <Link to="/" className="p-2 hover:bg-gray-100 rounded-full text-gray-600">
+                    <Link to="/" className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors">
                         <ArrowLeft className="w-5 h-5" />
                     </Link>
-                    <h1 className="text-xl font-semibold text-gray-800">Dashboard</h1>
-                    <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full font-medium">
-                        {registrations.length}
-                    </span>
-                    <span className="hidden md:flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-200" title="Data is synchronized with Google Sheets">
-                         <Database className="w-3 h-3" /> Cloud
-                    </span>
+                    <div className="flex flex-col">
+                        <h1 className="text-lg font-display font-bold text-white tracking-wide">COMMAND CENTER</h1>
+                        <span className="text-[10px] text-cyber-primary font-mono flex items-center gap-1">
+                             <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> SYSTEM ONLINE
+                        </span>
+                    </div>
                 </div>
                 <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="hidden md:flex items-center gap-2 mr-4 text-xs font-mono text-slate-500 bg-black/30 px-3 py-1 rounded border border-slate-800">
+                        <Database className="w-3 h-3" />
+                        ENTRIES: <span className="text-white">{registrations.length}</span>
+                    </div>
+
                     <button 
                         type="button"
                         onClick={handleCopyForSheets}
-                        className={`flex items-center gap-2 ${copySuccess ? 'bg-green-700' : 'bg-green-600'} text-white px-3 py-2 sm:px-4 rounded-md hover:bg-green-700 text-xs sm:text-sm font-medium transition shadow-sm`}
+                        className={`flex items-center gap-2 ${copySuccess ? 'bg-green-600' : 'bg-slate-800 hover:bg-slate-700'} text-white px-3 py-2 rounded border border-slate-600 hover:border-cyber-primary text-xs font-tech font-bold uppercase transition`}
                         disabled={registrations.length === 0 || isLoading}
-                        title="Copy data to paste into Google Sheets or Excel"
                     >
                         {copySuccess ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                        <span className="hidden sm:inline">{copySuccess ? 'Copied!' : 'Copy for Sheets'}</span>
+                        <span className="hidden sm:inline">{copySuccess ? 'COPIED' : 'COPY TSV'}</span>
                     </button>
 
                     <button 
                         type="button"
                         onClick={() => exportToCSV(registrations)}
-                        className="flex items-center gap-2 bg-blue-600 text-white px-3 py-2 sm:px-4 rounded-md hover:bg-blue-700 text-xs sm:text-sm font-medium transition shadow-sm"
+                        className="flex items-center gap-2 bg-cyber-primary hover:bg-violet-600 text-white px-3 py-2 rounded text-xs font-tech font-bold uppercase transition shadow-[0_0_10px_rgba(139,92,246,0.3)]"
                         disabled={registrations.length === 0 || isLoading}
                     >
-                        <Download className="w-4 h-4" /> <span className="hidden sm:inline">Export CSV</span>
+                        <Download className="w-4 h-4" /> <span className="hidden sm:inline">EXPORT CSV</span>
                     </button>
                     
-                    <div className="h-6 w-px bg-gray-300 mx-1"></div>
-
                     <button 
                         type="button"
                         onClick={handleClearAll}
-                        className="flex items-center gap-2 bg-red-50 text-red-600 px-3 py-2 sm:px-4 rounded-md hover:bg-red-100 text-xs sm:text-sm font-medium transition"
+                        className="flex items-center gap-2 bg-red-900/20 text-red-400 border border-red-900/50 px-3 py-2 rounded hover:bg-red-900/40 text-xs font-tech font-bold uppercase transition"
                         disabled={registrations.length === 0 || isLoading}
                     >
-                        <Trash2 className="w-4 h-4" /> <span className="hidden sm:inline">Clear All</span>
+                        <Trash2 className="w-4 h-4" />
                     </button>
                 </div>
             </div>
@@ -178,71 +179,71 @@ export const AdminPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             
             {/* Search */}
-            <div className="mb-6 relative">
+            <div className="mb-6 relative max-w-md">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-gray-400" />
+                    <Search className="h-5 w-5 text-slate-500" />
                 </div>
                 <input
                     type="text"
-                    placeholder="Search by team, leader, or game..."
+                    placeholder="Search database..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 block w-full border border-gray-300 rounded-md py-2 px-3 shadow-sm focus:ring-purple-500 focus:border-purple-500 bg-white"
+                    className="pl-10 block w-full bg-slate-900 border border-slate-700 rounded text-gray-200 py-2 px-3 focus:border-cyber-primary focus:ring-1 focus:ring-cyber-primary focus:outline-none placeholder-slate-600 font-tech"
                 />
             </div>
 
             {/* Table Card */}
-            <div className="bg-white shadow-sm rounded-lg overflow-hidden border border-gray-200">
+            <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden shadow-xl">
                 {isLoading ? (
-                    <div className="p-12 text-center text-gray-500 flex flex-col items-center">
-                        <Loader2 className="w-10 h-10 mb-4 text-purple-600 animate-spin" />
-                        <p className="text-sm">Syncing with server...</p>
+                    <div className="p-20 text-center flex flex-col items-center">
+                        <Loader2 className="w-12 h-12 mb-4 text-cyber-primary animate-spin" />
+                        <p className="text-gray-400 font-tech uppercase tracking-widest">Retrieving Data...</p>
                     </div>
                 ) : registrations.length === 0 ? (
-                    <div className="p-12 text-center text-gray-500 flex flex-col items-center">
-                        <Users className="w-12 h-12 mb-4 text-gray-300" />
-                        <p className="text-lg">No registrations found.</p>
-                        <p className="text-sm">Share the form link to start collecting teams.</p>
+                    <div className="p-20 text-center flex flex-col items-center text-gray-500">
+                        <Terminal className="w-16 h-16 mb-6 opacity-20" />
+                        <p className="text-xl font-display uppercase">Database Empty</p>
+                        <p className="text-sm font-tech">Waiting for incoming signals.</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                        <table className="min-w-full divide-y divide-slate-800">
+                            <thead className="bg-slate-950">
                                 <tr>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Game</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Leader</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-cyber-accent uppercase tracking-widest font-display">Squad</th>
+                                    <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-cyber-accent uppercase tracking-widest font-display">Game</th>
+                                    <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-cyber-accent uppercase tracking-widest font-display">Leader</th>
+                                    <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-cyber-accent uppercase tracking-widest font-display">Comms</th>
+                                    <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-cyber-accent uppercase tracking-widest font-display">Payment</th>
+                                    <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-cyber-accent uppercase tracking-widest font-display">Timestamp</th>
+                                    <th scope="col" className="px-6 py-4 text-right text-[10px] font-bold text-cyber-accent uppercase tracking-widest font-display">Ops</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="bg-slate-900 divide-y divide-slate-800/50">
                                 {filteredData.map((reg) => (
-                                    <tr key={reg.id} className="hover:bg-gray-50">
+                                    <tr key={reg.id} className="hover:bg-slate-800 transition-colors group">
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-gray-900">{reg.teamName}</div>
-                                            <div className="text-xs text-gray-500">ID: {reg.ingameId || 'N/A'}</div>
+                                            <div className="text-sm font-bold text-white font-tech">{reg.teamName}</div>
+                                            <div className="text-xs text-slate-500 font-mono">ID: {reg.ingameId || 'N/A'}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                            <span className="px-2 py-0.5 inline-flex text-xs leading-5 font-bold rounded bg-slate-800 text-cyan-400 border border-slate-700">
                                                 {reg.gameName}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">{reg.leaderName}</div>
-                                            <div className="text-xs text-gray-500">{reg.discordUsername}</div>
+                                            <div className="text-sm text-gray-300 font-tech">{reg.leaderName}</div>
+                                            <div className="text-xs text-slate-500">{reg.discordUsername}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">{reg.leaderPhone}</div>
-                                            <div className="text-xs text-gray-500">{reg.leaderEmail}</div>
+                                            <div className="text-sm text-gray-300 font-mono">{reg.leaderPhone}</div>
+                                            <div className="text-xs text-slate-500">{reg.leaderEmail}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">{reg.paymentMethod}</div>
-                                            <div className="text-xs text-gray-500 font-mono">{reg.transactionId}</div>
+                                            <div className="text-xs text-slate-400">{reg.paymentMethod}</div>
+                                            <div className="text-xs text-yellow-500 font-mono bg-yellow-900/20 px-1 rounded border border-yellow-900/30 inline-block">{reg.transactionId}</div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td className="px-6 py-4 whitespace-nowrap text-xs text-slate-500 font-mono">
                                             {new Date(reg.timestamp).toLocaleDateString()}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -252,10 +253,10 @@ export const AdminPage: React.FC = () => {
                                                     e.stopPropagation();
                                                     handleDeleteOne(reg.id, reg.teamName);
                                                 }}
-                                                className="text-red-600 hover:text-red-900 bg-red-50 p-2 rounded-full hover:bg-red-100 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
-                                                title="Delete Team"
+                                                className="text-slate-600 hover:text-red-500 transition-colors"
+                                                title="Delete Entry"
                                             >
-                                                <Trash className="w-4 h-4" />
+                                                <Trash2 className="w-4 h-4" />
                                             </button>
                                         </td>
                                     </tr>
