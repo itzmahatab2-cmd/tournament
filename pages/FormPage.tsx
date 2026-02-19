@@ -202,7 +202,7 @@ export const FormPage: React.FC = () => {
                 <div className="space-y-4 text-sm font-tech text-gray-400">
                     <div className="p-3 bg-slate-800/50 rounded border-l-2 border-cyber-accent">
                         <p className="text-white font-bold mb-1">📅 DEPLOYMENT DATE</p>
-                        <p>20 February / Friday</p>
+                        <p> Every Friday</p>
                     </div>
 
                     <div>
